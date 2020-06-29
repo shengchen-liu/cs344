@@ -38,7 +38,7 @@ void rgba_to_greyscale(const uchar4* const rgbaImage,
                        unsigned char* const greyImage,
                        int numRows, int numCols)
 {
-  //TODO
+  //DONE
   //Fill in the kernel to convert from color to greyscale
   //the mapping from components of a uchar4 to RGBA is:
   // .x -> R ; .y -> G ; .z -> B ; .w -> A
@@ -50,6 +50,31 @@ void rgba_to_greyscale(const uchar4* const rgbaImage,
   //First create a mapping from the 2D block and grid locations
   //to an absolute 2D location in the image, then use that to
   //calculate a 1D offset
+
+  // for example, threadIdx: [1, 2, 1], blockIdx:[0, 1, 1], blockDim: [32, 32, 1]
+  // a block can be split into mutliple threads
+
+  // int y = threadIdx.y+ blockIdx.y* blockDim.y;
+  // int x = threadIdx.x+ blockIdx.x* blockDim.x;
+
+  // calculate 1d index location in rgbaImage
+
+  int blockId = blockIdx.x + blockIdx.y * gridDim.x;
+  int threadId = blockId * (blockDim.x * blockDim.y) + (threadIdx.y * blockDim.x) + threadIdx.x;
+
+  uchar4 rgba = rgbaImage[threadId];
+  float channelSum = .299f * rgba.x + .587f * rgba.y + .114f * rgba.z;
+  greyImage[threadId] = (unsigned char) channelSum;
+
+  // // calculate 1d index location in rgbaImage
+  // if (y < numCols && x < numRows) {
+  //   int index = numCols * x + y;
+  //   uchar4 rgba = rgbaImage[index];
+  //   float channelSum = .299f * rgba.x + .587f * rgba.y + .114f * rgba.z;
+  //   greyImage[index] = (unsigned char) channelSum;
+  // }
+    
+
 }
 
 void your_rgba_to_greyscale(const uchar4 * const h_rgbaImage, uchar4 * const d_rgbaImage,
@@ -57,8 +82,18 @@ void your_rgba_to_greyscale(const uchar4 * const h_rgbaImage, uchar4 * const d_r
 {
   //You must fill in the correct sizes for the blockSize and gridSize
   //currently only one block with one thread is being launched
-  const dim3 blockSize(1, 1, 1);  //TODO
-  const dim3 gridSize( 1, 1, 1);  //TODO
+
+  // set blockWidth
+  int blockWidth = 32;
+
+  const dim3 blockSize(blockWidth, blockWidth, 1);  //DONE
+
+  // calculate grid size
+  int bx = numRows / blockWidth + 1;
+  int by = numCols / blockWidth + 1;
+  // bz = 1
+  const dim3 gridSize( bx, by, 1);  //DONE
+
   rgba_to_greyscale<<<gridSize, blockSize>>>(d_rgbaImage, d_greyImage, numRows, numCols);
   
   cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());

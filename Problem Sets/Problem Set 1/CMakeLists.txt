@@ -5,10 +5,14 @@
 # <email>   quantm@unist.ac.kr  kast.jo@googlemail.com msarahan@gmail.com</email>
 ############################################################################
 
+cmake_minimum_required(VERSION 2.8)
+find_package(CUDA QUIET REQUIRED)
+
 # collect source files
 
 file( GLOB  hdr *.hpp *.h )
 file( GLOB  cu  *.cu)
 SET (HW1_files main.cpp reference_calc.cpp compare.cpp)
 
-CUDA_ADD_EXECUTABLE(HW1 ${HW1_files} ${hdr} ${cu})
+# Specify target & source files to compile it from
+cuda_add_executable(HW1 ${HW1_files} ${hdr} ${cu})
