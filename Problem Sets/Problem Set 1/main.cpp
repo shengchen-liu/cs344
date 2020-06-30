@@ -56,6 +56,7 @@ int main(int argc, char **argv) {
       exit(1);
   }
   //load the image and give us our input and output pointers
+  input_file = "cinque_terre_small.jpg";
   preProcess(&h_rgbaImage, &h_greyImage, &d_rgbaImage, &d_greyImage, input_file);
 
   GpuTimer timer;
